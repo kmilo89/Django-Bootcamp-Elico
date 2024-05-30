@@ -220,17 +220,32 @@ examples
 <a class="collapse-item" href="{% url 'data' %}">data</a>
 
 
+### Create model
+in dashboard/models.py
 
+# Create your models here.
+class Person(models.Model):
+    name = models.CharField(max_length=30)
+    age = models.IntegerField()
+    id_number = models.CharField(max_length=10)
+    profession = models.CharField(max_length=20)
+    married = models.BooleanField()
+    city = models.CharField(max_length=30)
+    birth = models.DateField(null=True, blank=True)
 
+### Register model
+in dashboard/admin.py
+from django.contrib import admin
+from .models import Person
 
+# Register your models here.
 
+class PersonAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Person._meta.fields]
 
+admin.site.register(Person, PersonAdmin)
 
-
-
-
-
-
+perform migrations
 
 ## may 29 - 12:00
 
