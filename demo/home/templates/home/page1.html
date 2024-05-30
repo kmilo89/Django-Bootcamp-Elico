@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+<!--Agregar Tags para incluir librerias-->
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800"> Información personal</h1>
+    </div>
+    <ul>
+        <li>Nombre: {{ name }}</li>
+        <li>Apellido: {{ lastname }}</li>
+        <li>Edad: {{ age }}</li>
+    </ul>
+    <h1>Materias Cursadas</h1>
+    <ul>
+        {% for area in areas %}
+            <li>{{ area }}</li>
+        {% endfor %}
+    </ul>
+
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Bienvenido al sistema de generación de datos</h1>
+    </div>
+    <form class="row g-3" method="post" action="{% url 'generate_data' %}">
+        {% csrf_token %} <!--Tag for security-->
+        <div class="col-md-4">
+          <label for="validationDefault01" class="form-label">Número de Pedidos</label>
+          <input type="number" class="form-control" id="validationDefault01" name="number" required>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Enviar</button>
+        </div>
+      </form>
+
+      {% if message %}
+        {{ message }}
+      {% endif %}
+
+{% endblock %}
