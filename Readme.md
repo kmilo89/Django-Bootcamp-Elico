@@ -309,7 +309,12 @@ forms/generate_data.html
       </form>
 
       {% if message %}
-        {{ message }}
+        <div id="messages">
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+        </div>
       {% endif %}
 
 {% endblock %}
@@ -366,3 +371,435 @@ href="{% url 'generate_data' %}"
 
 
 ## may 30 - 08:00
+
+create new app queries and university
+python manage.py startapp queries
+python manage.py startapp university
+
+in university/models.py
+from django.db import models
+
+# Create your models here.
+class Department(models.Model):
+    name = models.CharField(max_length=50)
+    building = models.CharField(max_length=2)
+
+class Program(models.Model):
+    name = models.CharField(max_length=50)
+    department_id = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+
+class Professor(models.Model):
+    name = models.CharField(max_length=50)
+    email = models.EmailField(max_length=50)
+    phone = models.CharField(max_length=20)
+
+class Course(models.Model):
+    name = models.CharField(max_length=50)
+    program_id = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True)
+    professor_id = models.ForeignKey(Professor, on_delete=models.SET_NULL, null=True, blank=True)
+    credits = models.PositiveIntegerField()
+
+class Student(models.Model):
+    name = models.CharField(max_length=50)
+    email = models.EmailField(max_length=50)
+    phone = models.CharField(max_length=20)
+    program_id = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True)
+
+class Enrollment(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    student_id = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True)
+    course_id = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+    
+in university/admin.py
+from django.contrib import admin
+from .models import *
+
+# Register your models here.
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Department._meta.fields]
+
+admin.site.register(Department, DepartmentAdmin)
+
+class ProgramAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Program._meta.fields]
+
+admin.site.register(Program, ProgramAdmin)
+
+class ProfessorAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Professor._meta.fields]
+
+admin.site.register(Professor, ProfessorAdmin)
+
+class CourseAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Course._meta.fields]
+
+admin.site.register(Course, CourseAdmin)
+
+class StudentAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Student._meta.fields]
+
+admin.site.register(Student, StudentAdmin)
+
+class EnrollmentAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Enrollment._meta.fields]
+
+admin.site.register(Enrollment, EnrollmentAdmin)
+
+
+register app in demo/settings.py
+in installed apps
+'university',
+'queries'
+
+run migrate
+
+### create university templates
+university/templates/university folder
+
+
+In demo/urls.py add path
+path('university/',include('university.urls')),
+
+in university/urls.py
+from django.urls import path
+from .views import * #con este import importamos todas las vistas en el mismo nivel de ruta de vistas.
+
+urlpatterns = [
+    path('forms/insert_department', insert_department, name='insert_department')
+]
+
+in university/views.py
+from django.shortcuts import render
+from .models import *
+
+def insert_department(request):
+    if request.method=='POST':
+        _department = request.POST.get('department')
+        _building = request.POST.get('building')
+        Department.objects.create(
+                name = _department,
+                building = _building
+            )
+        return render(request, 'university/forms/insert_department.html', {"message": f"Loaded department: {_department}, Building: {_building}"})
+    return render(request, 'university/forms/insert_department.html', {"message": ""})
+
+create university/templates/university/forms/insert_department.html
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Create department</h1>
+    </div>
+
+    <form class="row g-3" method="post" action="{% url 'insert_department' %}">
+        {% csrf_token %} <!--Tag for security-->
+
+        <div class="col-md-4">
+          <label for="validationDefault01" class="form-label">Department</label>
+          <input type="text" class="form-control" id="validationDefault01" name="department" required>
+        </div>
+
+        <div class="col-md-4">
+            <label for="validationDefault01" class="form-label">Building</label>
+            <input type="text" class="form-control" id="validationDefault01" name="building" required>
+          </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Insert</button>
+        </div>
+
+      </form>
+
+      {% if message %}
+        <div id="messages">
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+        </div>
+      {% endif %}
+
+{% endblock %}
+
+
+### Follow the steps above to create insert_program.html
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Create program</h1>
+    </div>
+
+    <form class="row g-3" method="post" action="{% url 'insert_program' %}">
+        {% csrf_token %} <!--Tag for security-->
+
+        <div class="col-md-4">
+          <label for="validationDefault01" class="form-label">Program</label>
+          <input type="text" class="form-control" id="validationDefault01" name="program" required>
+        </div>
+
+        <div class="col-md-4">
+            <label for="department_id" class="form-label">Department</label>
+            <select class="form-control" id="department_id" name="department_id" required>
+                <option value="" disabled selected>Select a department</option>
+                {% for department in departments %}
+                    <option value="{{ department.id }}">{{ department.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Insert</button>
+        </div>
+
+      </form>
+
+      {% if message %}
+        <div id="messages">
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+        </div>
+      {% endif %}
+
+{% endblock %}
+
+
+
+in views.py 
+def insert_program(request):
+    if request.method=='POST':
+        _program = request.POST.get('program')
+        _department_id = request.POST.get('department_id')
+        department = Department.objects.get(id=_department_id)
+        Program.objects.create(name=_program, department_id=department)
+        return render(request, 'university/forms/insert_program.html', {"message": f"Loaded Program: {_program}", 'departments': departments})
+    departments = Department.objects.all()
+    return render(request, 'university/forms/insert_program.html', {"message": "", 'departments': departments})
+
+
+
+### Follow the steps above to create insert_professor.html
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Create professor</h1>
+    </div>
+
+    <form class="row g-3" method="post" action="{% url 'insert_professor' %}">
+        {% csrf_token %} <!--Tag for security-->
+
+        <div class="col-md-4">
+          <label for="validationDefault01" class="form-label">Name</label>
+          <input type="text" class="form-control" id="validationDefault01" name="name" required>
+        </div>
+
+        <div class="col-md-4">
+            <label for="validationDefault01" class="form-label">Email</label>
+            <input type="email" class="form-control" id="validationDefault01" name="email" required>
+        </div>
+
+
+        <div class="col-md-4">
+            <label for="validationDefault01" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="validationDefault01" name="phone" required>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Insert</button>
+        </div>
+
+      </form>
+
+      {% if message %}
+        <div id="messages">
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+        </div>
+      {% endif %}
+
+{% endblock %}
+
+in views.py
+
+
+def insert_professor(request):
+    if request.method=='POST':
+        _name = request.POST.get('name')
+        _email = request.POST.get('email')
+        _phone = request.POST.get('phone')
+        Professor.objects.create(
+                name = _name,
+                email = _email,
+                phone = _phone
+            )
+        return render(request, 'university/forms/insert_professor.html', {"message": f"Loaded professor: {_name}"})
+    return render(request, 'university/forms/insert_professor.html', {"message": ""})
+
+
+
+### Follow the steps above to create insert_course.html
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Create course</h1>
+    </div>
+
+    <form class="row g-3" method="post" action="{% url 'insert_course' %}">
+        {% csrf_token %} <!--Tag for security-->
+
+        <div class="col-md-4">
+          <label for="validationDefault01" class="form-label">Name</label>
+          <input type="text" class="form-control" id="validationDefault01" name="name" required>
+        </div>
+
+        <div class="col-md-4">
+            <label for="department_id" class="form-label">Program</label>
+            <select class="form-control" id="program_id" name="program_id" required>
+                <option value="" disabled selected>Select a program</option>
+                {% for program in programs %}
+                    <option value="{{ program.id }}">{{ program.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+          <label for="department_id" class="form-label">Professor</label>
+          <select class="form-control" id="professor_id" name="professor_id" required>
+              <option value="" disabled selected>Select a professor</option>
+              {% for professor in professors %}
+                  <option value="{{ professor.id }}">{{ professor.name }}</option>
+              {% endfor %}
+          </select>
+      </div>
+
+      <div class="col-md-4">
+        <label for="validationDefault01" class="form-label">Credits</label>
+        <input type="text" class="form-control" id="validationDefault01" name="credits" required>
+      </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Insert</button>
+        </div>
+
+      </form>
+
+      {% if message %}
+        <div id="messages">
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+        </div>
+      {% endif %}
+
+{% endblock %}
+
+
+In views.py
+def insert_course(request):
+    programs = Program.objects.all()
+    professors = Professor.objects.all()
+    if request.method=='POST':
+        _name = request.POST.get('name')
+        _program_id = request.POST.get('program_id')
+        _professor_id = request.POST.get('professor_id')
+        _credits = request.POST.get('credits')
+        program = Program.objects.get(id=_program_id)
+        professor = Professor.objects.get(id=_professor_id)
+        Course.objects.create(
+                name = _name,
+                program_id = program,
+                professor_id = professor,
+                credits = _credits
+            )
+        return render(request, 'university/forms/insert_course.html', {"message": f"Loaded course: {_name}", 'programs': programs, 'professors': professors})
+    return render(request, 'university/forms/insert_course.html', {"message": "", 'programs': programs, 'professors': professors})
+
+### Follow the steps above to create insert_student.html
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Create student</h1>
+    </div>
+
+    <form class="row g-3" method="post" action="{% url 'insert_student' %}">
+        {% csrf_token %} <!--Tag for security-->
+
+        <div class="col-md-4">
+          <label for="validationDefault01" class="form-label">Name</label>
+          <input type="text" class="form-control" id="validationDefault01" name="name" required>
+        </div>
+
+        <div class="col-md-4">
+            <label for="validationDefault01" class="form-label">Email</label>
+            <input type="email" class="form-control" id="validationDefault01" name="email" required>
+        </div>
+
+
+        <div class="col-md-4">
+            <label for="validationDefault01" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="validationDefault01" name="phone" required>
+        </div>
+
+
+        <div class="col-md-4">
+            <label for="department_id" class="form-label">Program</label>
+            <select class="form-control" id="program_id" name="program_id" required>
+                <option value="" disabled selected>Select a program</option>
+                {% for program in programs %}
+                    <option value="{{ program.id }}">{{ program.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Insert</button>
+        </div>
+
+      </form>
+
+      {% if message %}
+        <div id="messages">
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+        </div>
+      {% endif %}
+
+{% endblock %}
+
+in views.py
+
+def insert_student(request):
+    programs = Program.objects.all()
+    if request.method=='POST':
+        _name = request.POST.get('name')
+        _email = request.POST.get('email')
+        _phone = request.POST.get('phone')
+        _program_id = request.POST.get('program_id')
+        program = Program.objects.get(id=_program_id)
+        Student.objects.create(
+                name = _name,
+                email = _email,
+                phone = _phone,
+                program_id = program
+            )
+        return render(request, 'university/forms/insert_student.html', {"message": f"Loaded student: {_name}", 'programs': programs})
+    return render(request, 'university/forms/insert_student.html', {"message": "", 'programs': programs})

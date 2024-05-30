@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Create program</h1>
+    </div>
+
+    <form class="row g-3" method="post" action="{% url 'insert_program' %}">
+        {% csrf_token %} <!--Tag for security-->
+
+        <div class="col-md-4">
+          <label for="validationDefault01" class="form-label">Program</label>
+          <input type="text" class="form-control" id="validationDefault01" name="program" required>
+        </div>
+
+        <div class="col-md-4">
+            <label for="department_id" class="form-label">Department</label>
+            <select class="form-control" id="department_id" name="department_id" required>
+                <option value="" disabled selected>Select a department</option>
+                {% for department in departments %}
+                    <option value="{{ department.id }}">{{ department.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Insert</button>
+        </div>
+
+      </form>
+
+      {% if message %}
+        <div id="messages">
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+        </div>
+      {% endif %}
+
+{% endblock %}
