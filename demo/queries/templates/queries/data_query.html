@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Queries</h1>
+    </div>
+
+    <form method="get" action="{% url 'data_query' %}" class="mb-4"> 
+        <div class="input-group">
+            <input type="text" class="form-control" name="course_filter" placeholder="Filter by course" value="{{ course_filter }}">
+            <button class="btn btn-primary" type="submit">Filter</button>
+        </div>
+    </form>
+
+    <table class="table">  
+        <thead>    
+            <tr>      
+                <th scope="col">Course</th>      
+                <th scope="col">Program</th>      
+                <th scope="col">Professor</th>      
+                <th scope="col">Credits</th>    
+            </tr>  
+        </thead>  
+        <tbody> 
+            {% for course, program, professor, credit in combined_data %}  
+            <tr>     
+                <td>{{ course}}</td>
+                <td>{{ program }}</td>
+                <td>{{ professor  }}</td>
+                <td>{{ credit }}</td>
+            </tr>    
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

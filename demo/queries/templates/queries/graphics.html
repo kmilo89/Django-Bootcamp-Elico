@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %} 
+    <div class="container text-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">OEE</h1>
+        <input type="text" id="start_date" value="2024-05-20">
+        <input type="text" id="end_date" value="2024-05-31">
+        <button id="updateButton" class="btn btn-primary" type="submit">Consult</button>
+        <div id="bar" style="height: 500px;"></div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/es.min.js"></script>
+
+    <script>
+        var config = {
+            displayModeBar: false,
+            responsive: true
+        };
+        var data = [
+            {
+                //x:['mango', 'manzana', 'pan'],
+                //y:[10, 5, 20],
+                type: 'bar',
+                marker: {
+                    color: 'rgb(0,0,0)',
+                    opacity: 0.8,
+                    line: {
+                        color: 'rgb(8,48,107)',
+                        width: 1.5
+                    }
+                },
+                textposition: 'auto',
+            }
+        ];
+        var layaoutData = {
+                title: 'Test I4.0',
+                barmode: 'stack',
+                font:{
+                    family: 'Raleway, sans-serif'
+                },
+                xaxis: {
+                    tickangle: -45
+                },
+                yaxis: {
+                    zeroline: false,
+                    gridwidth: 2
+                },
+                bargap :0.5
+
+            };
+
+        Plotly.newPlot('bar', data, layaoutData, config);
+
+        function updateData(){
+            var start_date=document.getElementById('start_date').value;
+            var end_date=document.getElementById('end_date').value;
+            fetch(`https://industrial-insights-jamesgarcia.pythonanywhere.com/goem/api/TotalGoemTest/?start_date=${start_date}&end_date=${end_date}`)
+            .then(response=>response.json())
+            .then(data=>{
+                Plotly.update('bar', {x:[data.date_name_list], y:[data.oee]});
+            });
+        }
+
+        //setInterval(updateData, 1000);
+        document.getElementById('updateButton').addEventListener('click', function () {updateData();});
+ 
+
+    </script>
+
+{% endblock %}

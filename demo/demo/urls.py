@@ -22,4 +22,5 @@ urlpatterns = [
     path('',include('home.urls')),
     path('dashboards/',include('dashboard.urls')),
     path('university/',include('university.urls')),
+    path('queries/',include('queries.urls')),
 ]

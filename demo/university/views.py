@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import *
+from django.http import JsonResponse
 
 def insert_department(request):
     if request.method=='POST':
@@ -70,3 +71,31 @@ def insert_student(request):
             )
         return render(request, 'university/forms/insert_student.html', {"message": f"Loaded student: {_name}", 'programs': programs})
     return render(request, 'university/forms/insert_student.html', {"message": "", 'programs': programs})
+
+
+def insert_enrollment(request):
+    students = Student.objects.all()
+    courses = Course.objects.all()
+    if request.method=='POST':
+        _student_id = request.POST.get('student_id')
+        _course_id = request.POST.get('course_id')
+        student = Student.objects.get(id=_student_id)
+        course = Course.objects.get(id=_course_id)
+        Enrollment.objects.create(
+            student_id = student,
+            course_id = course
+        )
+        return render(request, 'university/forms/insert_enrollment.html', {"message": "Loaded enrollment", 'students':students, 'courses': courses})
+    return render(request, 'university/forms/insert_enrollment.html', {"message": "", 'students':students, 'courses': courses})
+
+
+def show_data_course(request):
+    courses = Course.objects.all()
+    
+    data = {
+        'courses':[course.name for course in courses],
+        'programs':[course.program_id.name for course in courses],
+        'professors':[course.professor_id.name for course in courses],
+        'credits':[course.credits for course in courses],
+    }
+    return JsonResponse(data)

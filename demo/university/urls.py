@@ -6,5 +6,7 @@ urlpatterns = [
     path('forms/insert_program', insert_program, name='insert_program'),
     path('forms/insert_professor', insert_professor, name='insert_professor'),
     path('forms/insert_course', insert_course, name='insert_course'),
-    path('forms/insert_student', insert_student, name='insert_student')
+    path('forms/insert_student', insert_student, name='insert_student'),
+    path('forms/insert_enrollment', insert_enrollment, name='insert_enrollment'),
+    path('show_data_course', show_data_course, name='show_data_course')
 ]
